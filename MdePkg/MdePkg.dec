@@ -298,6 +298,10 @@
   #
   MipiSysTLib|Include/Library/MipiSysTLib.h
 
+  ##  @libraryclass  Provides API to output Trace Hub debug message.
+  #
+  TraceHubDebugSysTLib|Include/Library/TraceHubDebugSysTLib.h
+
 [LibraryClasses.IA32, LibraryClasses.X64, LibraryClasses.AARCH64]
   ##  @libraryclass  Provides services to generate random number.
   #
