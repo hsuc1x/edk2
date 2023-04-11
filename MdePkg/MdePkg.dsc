@@ -184,6 +184,7 @@
   MdePkg/Library/MmServicesTableLib/MmServicesTableLib.inf
   MdePkg/Library/MmUnblockMemoryLib/MmUnblockMemoryLibNull.inf
   MdePkg/Library/TdxLib/TdxLib.inf
+  MdePkg/Library/TraceHubDebugSysTLibNull/TraceHubDebugSysTLibNull.inf
   MdePkg/Library/MipiSysTLib/MipiSysTLib.inf
 
 [Components.EBC]
