@@ -10,7 +10,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define TRACE_HUB_DEBUG_INFO_HOB_H_
 
 #define TRACEHUB_DEBUG_INFO_HOB_REVISION  1
-#define MAX_TRACE_HUB_DEBUG_INSTANCE      5
 
 typedef struct {
   UINT16     Revision;            // Structure revision

@@ -34,13 +34,4 @@ PackThDebugInstance (
   IN     UINT32                   Count
   );
 
-/**
-  Convert physical address to virtual address for the pointer to TRACEHUB_DEBUG_INFO_HOB structure.
-**/
-VOID
-EFIAPI
-InternalCreateThExitBootSvcEvent (
-  VOID
-  );
-
 #endif // INTERNAL_TRACE_HUB_API_H_

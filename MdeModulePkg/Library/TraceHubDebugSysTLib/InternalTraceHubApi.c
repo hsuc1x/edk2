@@ -24,26 +24,19 @@ CountThDebugInstance (
   VOID
   )
 {
-  UINT8   *DgbContext;
+  UINT8   *DbgContext;
   UINT32  DbgInstCount;
 
   DbgInstCount = 0;
 
-  DgbContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
-  if (DgbContext != NULL) {
-    while (DgbContext != NULL) {
+  DbgContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
+  if (DbgContext != NULL) {
+    while (DbgContext != NULL) {
       DbgInstCount++;
-      DgbContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DgbContext));
+      DbgContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DbgContext));
     }
   } else {
     DbgInstCount++;
-  }
-
-  //
-  // Trace Hub HOB larger than MAX_TRACE_HUB_DEBUG_INSTANCE won't be processed.
-  //
-  if (DbgInstCount > MAX_TRACE_HUB_DEBUG_INSTANCE) {
-    DbgInstCount = MAX_TRACE_HUB_DEBUG_INSTANCE;
   }
 
   return DbgInstCount;
@@ -62,15 +55,14 @@ PackThDebugInstance (
   IN     UINT32                   Count
   )
 {
-  UINT8   *DgbContext;
+  UINT8   *DbgContext;
   UINT16  Index;
 
-  ZeroMem (ThPtr, sizeof (TRACEHUB_DEBUG_INFO_HOB) * MAX_TRACE_HUB_DEBUG_INSTANCE);
-  DgbContext = GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
-  if (DgbContext != NULL) {
+  DbgContext = GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
+  if (DbgContext != NULL) {
     for (Index = 0; Index < Count; Index++) {
-      CopyMem (&ThPtr[Index], GET_GUID_HOB_DATA (DgbContext), sizeof (TRACEHUB_DEBUG_INFO_HOB));
-      DgbContext = GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DgbContext));
+      CopyMem (&ThPtr[Index], GET_GUID_HOB_DATA (DbgContext), sizeof (TRACEHUB_DEBUG_INFO_HOB));
+      DbgContext = GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DbgContext));
     }
   } else {
     for (Index = 0; Index < Count; Index++) {

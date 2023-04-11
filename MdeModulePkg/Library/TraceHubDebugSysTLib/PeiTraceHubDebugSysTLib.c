@@ -1,8 +1,6 @@
 /** @file
 System prints Trace Hub message in PEI based on fixed PCDs and HOB.
 System applies Trace Hub HOB once it detect gTraceHubDebugInfoHobGuid HOB.
-Support at most MAX_TRACE_HUB_DEBUG_INSTANCE of Trace Hub debug instances
-in the system.
 Trace Hub PCDs will be applied if no HOB exist.
 
 Copyright (c) 2023, Intel Corporation. All rights reserved.<BR>
@@ -45,7 +43,7 @@ TraceHubSysTDebugWrite (
   MIPI_SYST_HANDLE  MipiSystHandle;
   MIPI_SYST_HEADER  MipiSystHeader;
   RETURN_STATUS     Status;
-  UINT8             *DgbContext;
+  UINT8             *DbgContext;
   UINTN             Index;
   UINT32            DbgInstCount;
   UINT8             *ThDebugInfo;
@@ -73,9 +71,9 @@ TraceHubSysTDebugWrite (
     return Status;
   }
 
-  DgbContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
-  if (DgbContext != NULL) {
-    ThDebugInfo = GET_GUID_HOB_DATA (DgbContext);
+  DbgContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
+  if (DbgContext != NULL) {
+    ThDebugInfo = GET_GUID_HOB_DATA (DbgContext);
   } else {
     ThDebugInfo = NULL;
   }
@@ -84,13 +82,13 @@ TraceHubSysTDebugWrite (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                ThDebugInfo,
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubDebugType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteDebug (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  (UINT16)NumberOfBytes,
                  (CHAR8 *)Buffer
                  );
@@ -99,13 +97,13 @@ TraceHubSysTDebugWrite (
       }
     }
 
-    if (DgbContext != NULL) {
-      DgbContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DgbContext));
-      if (DgbContext == NULL) {
+    if (DbgContext != NULL) {
+      DbgContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DbgContext));
+      if (DbgContext == NULL) {
         break;
       }
 
-      ThDebugInfo = GET_GUID_HOB_DATA (DgbContext);
+      ThDebugInfo = GET_GUID_HOB_DATA (DbgContext);
     }
   }
 
@@ -133,7 +131,7 @@ TraceHubSysTWriteCataLog64StatusCode (
   MIPI_SYST_HANDLE  MipiSystHandle;
   MIPI_SYST_HEADER  MipiSystHeader;
   UINT32            DbgInstCount;
-  UINT8             *DgbContext;
+  UINT8             *DbgContext;
   RETURN_STATUS     Status;
   UINTN             Index;
   UINT8             *ThDebugInfo;
@@ -152,7 +150,7 @@ TraceHubSysTWriteCataLog64StatusCode (
   }
 
   if (Guid != NULL) {
-    ConvertedGuid = SwapBytesGuid (Guid);
+    SwapBytesGuid (Guid, &ConvertedGuid);
     CopyMem (&MipiSystHandle.systh_guid, &ConvertedGuid, sizeof (GUID));
     MipiSystHandle.systh_tag.et_guid = 1;
   } else {
@@ -160,9 +158,9 @@ TraceHubSysTWriteCataLog64StatusCode (
     MipiSystHandle.systh_tag.et_guid    = 0;
   }
 
-  DgbContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
-  if (DgbContext != NULL) {
-    ThDebugInfo = GET_GUID_HOB_DATA (DgbContext);
+  DbgContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
+  if (DbgContext != NULL) {
+    ThDebugInfo = GET_GUID_HOB_DATA (DbgContext);
   } else {
     ThDebugInfo = NULL;
   }
@@ -171,13 +169,13 @@ TraceHubSysTWriteCataLog64StatusCode (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                ThDebugInfo,
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubCatalogType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteCatalog (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  Id
                  );
       if (RETURN_ERROR (Status)) {
@@ -185,13 +183,13 @@ TraceHubSysTWriteCataLog64StatusCode (
       }
     }
 
-    if (DgbContext != NULL) {
-      DgbContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DgbContext));
-      if (DgbContext == NULL) {
+    if (DbgContext != NULL) {
+      DbgContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DbgContext));
+      if (DbgContext == NULL) {
         break;
       }
 
-      ThDebugInfo = GET_GUID_HOB_DATA (DgbContext);
+      ThDebugInfo = GET_GUID_HOB_DATA (DbgContext);
     }
   }
 
@@ -223,7 +221,7 @@ TraceHubSysTWriteCataLog64 (
   VA_LIST           Args;
   UINTN             Index;
   UINT32            DbgInstCount;
-  UINT8             *DgbContext;
+  UINT8             *DbgContext;
   RETURN_STATUS     Status;
   UINT8             *ThDebugInfo;
 
@@ -251,9 +249,9 @@ TraceHubSysTWriteCataLog64 (
 
   VA_END (Args);
 
-  DgbContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
-  if (DgbContext != NULL) {
-    ThDebugInfo = GET_GUID_HOB_DATA (DgbContext);
+  DbgContext = (UINT8 *)GetFirstGuidHob (&gTraceHubDebugInfoHobGuid);
+  if (DbgContext != NULL) {
+    ThDebugInfo = GET_GUID_HOB_DATA (DbgContext);
   } else {
     ThDebugInfo = NULL;
   }
@@ -262,13 +260,13 @@ TraceHubSysTWriteCataLog64 (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                ThDebugInfo,
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubCatalogType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteCatalog (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  Id
                  );
       if (RETURN_ERROR (Status)) {
@@ -276,13 +274,13 @@ TraceHubSysTWriteCataLog64 (
       }
     }
 
-    if (DgbContext != NULL) {
-      DgbContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DgbContext));
-      if (DgbContext == NULL) {
+    if (DbgContext != NULL) {
+      DbgContext = (UINT8 *)GetNextGuidHob (&gTraceHubDebugInfoHobGuid, GET_NEXT_HOB (DbgContext));
+      if (DbgContext == NULL) {
         break;
       }
 
-      ThDebugInfo = GET_GUID_HOB_DATA (DgbContext);
+      ThDebugInfo = GET_GUID_HOB_DATA (DbgContext);
     }
   }
 

@@ -50,14 +50,14 @@ TraceHubDataEnabled (
 /**
   Convert GUID from LE to BE or BE to LE.
 
-  @param[in]  Guid   GUID to be converted.
-
-  @retval RETURN_SUCCESS      Operation is successful.
+  @param[in]  Guid           GUID that need to be converted.
+  @param[out] ConvertedGuid  GUID that is converted.
 **/
-GUID
+VOID
 EFIAPI
 SwapBytesGuid (
-  IN OUT GUID  *Guid
+  IN  GUID  *Guid,
+  OUT GUID  *ConvertedGuid
   );
 
 /**
@@ -66,7 +66,7 @@ SwapBytesGuid (
   or Trace Hub MMIO address is 0.
 
   @param[in, out]  MipiSystHandle   A pointer to MIPI_SYST_HANDLE structure.
-  @param[in]       DgbContext       A pointer to Trace Hub debug instance.
+  @param[in]       DbgContext       A pointer to Trace Hub debug instance.
   @param[in]       SeverityType     Severity type of input message.
   @param[in]       PrintType        Either catalog print or debug print.
 
@@ -77,7 +77,7 @@ RETURN_STATUS
 EFIAPI
 CheckWhetherToOutputMsg (
   IN OUT MIPI_SYST_HANDLE         *MipiSystHandle,
-  IN     UINT8                    *DgbContext,
+  IN     UINT8                    *DbgContext,
   IN     TRACE_HUB_SEVERITY_TYPE  SeverityType,
   IN     TRACEHUB_PRINTTYPE       PrintType
   );
@@ -85,7 +85,7 @@ CheckWhetherToOutputMsg (
 /**
   Get Trace Hub MMIO Address.
 
-  @param[in]      DgbContext        A pointer to Trace Hub debug instance.
+  @param[in]      DbgContext        A pointer to Trace Hub debug instance.
   @param[in, out] TraceAddress      Trace Hub MMIO Address.
 
   @retval RETURN_SUCCESS      Operation is successfully.
@@ -94,14 +94,14 @@ CheckWhetherToOutputMsg (
 RETURN_STATUS
 EFIAPI
 GetTraceHubMmioAddress (
-  IN     UINT8   *DgbContext,
+  IN     UINT8   *DbgContext,
   IN OUT UINT64  *TraceAddress
   );
 
 /**
   Get visibility of Trace Hub Msg.
 
-  @param[in]      DgbContext      A pointer to Trace Hub debug instance.
+  @param[in]      DbgContext      A pointer to Trace Hub debug instance.
   @param[in, out] Flag            Flag to enable or disable Trace Hub message.
   @param[in, out] DbgLevel        Debug Level of Trace Hub.
 
@@ -111,7 +111,7 @@ GetTraceHubMmioAddress (
 RETURN_STATUS
 EFIAPI
 GetTraceHubMsgVisibility (
-  IN     UINT8    *DgbContext,
+  IN     UINT8    *DbgContext,
   IN OUT BOOLEAN  *Flag,
   IN OUT UINT8    *DbgLevel
   );

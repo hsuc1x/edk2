@@ -60,28 +60,21 @@ TraceHubDataEnabled (
 /**
   Convert GUID from LE to BE or BE to LE.
 
-  @param[in]  Guid   GUID to be converted.
-
-  @retval RETURN_SUCCESS      Operation is successful.
+  @param[in]  Guid           GUID that need to be converted.
+  @param[out] ConvertedGuid  GUID that is converted.
 **/
-GUID
+VOID
 EFIAPI
 SwapBytesGuid (
-  IN GUID  *Guid
+  IN  GUID  *Guid,
+  OUT GUID  *ConvertedGuid
   )
 {
-  GUID    ConvertedGuid;
-  UINT64  GuidData4;
-
-  ZeroMem (&ConvertedGuid, sizeof (GUID));
-  ConvertedGuid.Data1 = SwapBytes32 (Guid->Data1);
-  ConvertedGuid.Data2 = SwapBytes16 (Guid->Data2);
-  ConvertedGuid.Data3 = SwapBytes16 (Guid->Data3);
-  CopyMem (&GuidData4, Guid->Data4, sizeof (Guid->Data4));
-  GuidData4 = SwapBytes64 (GuidData4);
-  CopyMem (ConvertedGuid.Data4, &GuidData4, sizeof (GuidData4));
-
-  return ConvertedGuid;
+  ZeroMem (ConvertedGuid, sizeof (GUID));
+  ConvertedGuid->Data1 = SwapBytes32 (Guid->Data1);
+  ConvertedGuid->Data2 = SwapBytes16 (Guid->Data2);
+  ConvertedGuid->Data3 = SwapBytes16 (Guid->Data3);
+  CopyMem (&(ConvertedGuid->Data4), &(Guid->Data4), sizeof (Guid->Data4));
 }
 
 /**
@@ -90,7 +83,7 @@ SwapBytesGuid (
   or Trace Hub MMIO address is 0.
 
   @param[in, out]  MipiSystHandle   A pointer to MIPI_SYST_HANDLE structure.
-  @param[in]       DgbContext       A pointer to Trace Hub debug instance.
+  @param[in]       DbgContext       A pointer to Trace Hub debug instance.
   @param[in]       SeverityType     Severity type of input message.
   @param[in]       PrintType        Either catalog print or debug print.
 
@@ -101,7 +94,7 @@ RETURN_STATUS
 EFIAPI
 CheckWhetherToOutputMsg (
   IN OUT MIPI_SYST_HANDLE         *MipiSystHandle,
-  IN     UINT8                    *DgbContext,
+  IN     UINT8                    *DbgContext,
   IN     TRACE_HUB_SEVERITY_TYPE  SeverityType,
   IN     TRACEHUB_PRINTTYPE       PrintType
   )
@@ -116,7 +109,7 @@ CheckWhetherToOutputMsg (
   }
 
   if (PrintType == TraceHubDebugType) {
-    Status = GetTraceHubMsgVisibility (DgbContext, &Flag, &DbgLevel);
+    Status = GetTraceHubMsgVisibility (DbgContext, &Flag, &DbgLevel);
     if (RETURN_ERROR (Status)) {
       return Status;
     }
@@ -126,7 +119,7 @@ CheckWhetherToOutputMsg (
     }
   }
 
-  Status = GetTraceHubMmioAddress (DgbContext, &Addr);
+  Status = GetTraceHubMmioAddress (DbgContext, &Addr);
   if (RETURN_ERROR (Status)) {
     return Status;
   }
@@ -142,7 +135,7 @@ CheckWhetherToOutputMsg (
 /**
   Get Trace Hub MMIO Address.
 
-  @param[in]      DgbContext        A pointer to Trace Hub debug instance.
+  @param[in]      DbgContext        A pointer to Trace Hub debug instance.
   @param[in, out] TraceAddress      Trace Hub MMIO Address.
 
   @retval RETURN_SUCCESS      Operation is successfully.
@@ -151,7 +144,7 @@ CheckWhetherToOutputMsg (
 RETURN_STATUS
 EFIAPI
 GetTraceHubMmioAddress (
-  IN     UINT8   *DgbContext,
+  IN     UINT8   *DbgContext,
   IN OUT UINT64  *TraceAddress
   )
 {
@@ -161,8 +154,8 @@ GetTraceHubMmioAddress (
     return RETURN_INVALID_PARAMETER;
   }
 
-  if (DgbContext != NULL) {
-    ThDbgContext  = (TRACEHUB_DEBUG_INFO_HOB *)DgbContext;
+  if (DbgContext != NULL) {
+    ThDbgContext  = (TRACEHUB_DEBUG_INFO_HOB *)DbgContext;
     *TraceAddress = ThDbgContext->TraceHubMmioAddress;
   } else {
     *TraceAddress = FixedPcdGet64 (PcdTraceHubDebugMmioAddress);
@@ -174,7 +167,7 @@ GetTraceHubMmioAddress (
 /**
   Get visibility of Trace Hub Msg.
 
-  @param[in]      DgbContext      A pointer to Trace Hub debug instance.
+  @param[in]      DbgContext      A pointer to Trace Hub debug instance.
   @param[in, out] Flag            Flag to enable or disable Trace Hub message.
   @param[in, out] DbgLevel        Debug Level of Trace Hub.
 
@@ -184,7 +177,7 @@ GetTraceHubMmioAddress (
 RETURN_STATUS
 EFIAPI
 GetTraceHubMsgVisibility (
-  IN     UINT8    *DgbContext,
+  IN     UINT8    *DbgContext,
   IN OUT BOOLEAN  *Flag,
   IN OUT UINT8    *DbgLevel
   )
@@ -195,8 +188,8 @@ GetTraceHubMsgVisibility (
     return RETURN_INVALID_PARAMETER;
   }
 
-  if (DgbContext != NULL) {
-    ThDbgContext = (TRACEHUB_DEBUG_INFO_HOB *)DgbContext;
+  if (DbgContext != NULL) {
+    ThDbgContext = (TRACEHUB_DEBUG_INFO_HOB *)DbgContext;
     *Flag        = ThDbgContext->Flag;
     *DbgLevel    = ThDbgContext->DebugLevel;
   } else {

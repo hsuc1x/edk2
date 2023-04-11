@@ -70,13 +70,13 @@ TraceHubSysTDebugWrite (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                NULL,
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubDebugType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteDebug (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  (UINT16)NumberOfBytes,
                  (CHAR8 *)Buffer
                  );
@@ -130,7 +130,7 @@ TraceHubSysTWriteCataLog64StatusCode (
     return Status;
   }
 
-  ConvertedGuid = SwapBytesGuid (Guid);
+  SwapBytesGuid (Guid, &ConvertedGuid);
   CopyMem (&MipiSystHandle.systh_guid, &ConvertedGuid, sizeof (GUID));
   MipiSystHandle.systh_tag.et_guid = 1;
 
@@ -138,13 +138,13 @@ TraceHubSysTWriteCataLog64StatusCode (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                NULL,
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubCatalogType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteCatalog (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  Id
                  );
       if (RETURN_ERROR (Status)) {
@@ -211,13 +211,13 @@ TraceHubSysTWriteCataLog64 (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                NULL,
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubCatalogType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteCatalog (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  Id
                  );
       if (RETURN_ERROR (Status)) {

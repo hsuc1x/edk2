@@ -16,14 +16,10 @@ Only support single Trace Hub debug instance.
 ## PeiTraceHubDebugSysTLib.inf ##
 System prints Trace Hub message in PEI based on fixed PCDs and HOB.
 System applies Trace Hub HOB once it detect gTraceHubDebugInfoHobGuid HOB.
-Support at most MAX_TRACE_HUB_DEBUG_INSTANCE of Trace Hub debug instances
-in the system.
 Trace Hub PCDs will be applied if no HOB exist.
 
 ## DxeSmmTraceHubDebugSysTLib.inf ##
 System prints Trace Hub message in DXE/SMM based on fixed PCDs and HOB.
-Support at most MAX_TRACE_HUB_DEBUG_INSTANCE of Trace Hub debug instances
-in the system.
 Trace Hub PCDs will be applied if no HOB exist.
 
 ## Note ##

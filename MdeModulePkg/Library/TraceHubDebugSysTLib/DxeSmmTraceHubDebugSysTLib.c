@@ -1,7 +1,5 @@
 /** @file
 System prints Trace Hub message in DXE/SMM based on fixed PCDs and HOB.
-Support at most MAX_TRACE_HUB_DEBUG_INSTANCE of Trace Hub debug instances
-in the system.
 Trace Hub PCDs will be applied if no HOB exist.
 
 Copyright (c) 2023, Intel Corporation. All rights reserved.<BR>
@@ -23,7 +21,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "InternalTraceHubApiCommon.h"
 #include "InternalTraceHubApi.h"
 
-GLOBAL_REMOVE_IF_UNREFERENCED TRACEHUB_DEBUG_INFO_HOB  mThDebugInstArray[MAX_TRACE_HUB_DEBUG_INSTANCE];
+GLOBAL_REMOVE_IF_UNREFERENCED TRACEHUB_DEBUG_INFO_HOB  *mThDebugInstArray = NULL;
 GLOBAL_REMOVE_IF_UNREFERENCED UINT32                   mDbgInstCount = 0;
 
 /**
@@ -49,6 +47,10 @@ TraceHubSysTDebugWrite (
   RETURN_STATUS     Status;
   UINT16            Index;
 
+  if (mDbgInstCount == 0 || mThDebugInstArray == NULL) {
+    return RETURN_ABORTED;
+  }
+
   if (NumberOfBytes == 0) {
     //
     // No data need to be written to Trace Hub
@@ -58,14 +60,6 @@ TraceHubSysTDebugWrite (
 
   if (Buffer == NULL) {
     return RETURN_INVALID_PARAMETER;
-  }
-
-  if (mDbgInstCount == 0) {
-    mDbgInstCount = CountThDebugInstance ();
-  }
-
-  if (mThDebugInstArray[0].TraceHubMmioAddress == 0) {
-    PackThDebugInstance (&mThDebugInstArray[0], mDbgInstCount);
   }
 
   ZeroMem (&MipiSystHandle, sizeof (MIPI_SYST_HANDLE));
@@ -80,13 +74,13 @@ TraceHubSysTDebugWrite (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                (UINT8 *)&mThDebugInstArray[Index],
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubDebugType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteDebug (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  (UINT16)NumberOfBytes,
                  (CHAR8 *)Buffer
                  );
@@ -123,12 +117,8 @@ TraceHubSysTWriteCataLog64StatusCode (
   RETURN_STATUS     Status;
   GUID              ConvertedGuid;
 
-  if (mDbgInstCount == 0) {
-    mDbgInstCount = CountThDebugInstance ();
-  }
-
-  if (mThDebugInstArray[0].TraceHubMmioAddress == 0) {
-    PackThDebugInstance (&mThDebugInstArray[0], mDbgInstCount);
+  if (mDbgInstCount == 0 || mThDebugInstArray == NULL) {
+    return RETURN_ABORTED;
   }
 
   MipiSystHandle.systh_header = &MipiSystHeader;
@@ -140,7 +130,7 @@ TraceHubSysTWriteCataLog64StatusCode (
   }
 
   if (Guid != NULL) {
-    ConvertedGuid = SwapBytesGuid (Guid);
+    SwapBytesGuid (Guid, &ConvertedGuid);
     CopyMem (&MipiSystHandle.systh_guid, &ConvertedGuid, sizeof (GUID));
     MipiSystHandle.systh_tag.et_guid = 1;
   } else {
@@ -152,13 +142,13 @@ TraceHubSysTWriteCataLog64StatusCode (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                (UINT8 *)&mThDebugInstArray[Index],
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubCatalogType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteCatalog (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  Id
                  );
       if (RETURN_ERROR (Status)) {
@@ -200,12 +190,8 @@ TraceHubSysTWriteCataLog64 (
     return RETURN_INVALID_PARAMETER;
   }
 
-  if (mDbgInstCount == 0) {
-    mDbgInstCount = CountThDebugInstance ();
-  }
-
-  if (mThDebugInstArray[0].TraceHubMmioAddress == 0) {
-    PackThDebugInstance (&mThDebugInstArray[0], mDbgInstCount);
+  if (mDbgInstCount == 0 || mThDebugInstArray == NULL) {
+    return RETURN_ABORTED;
   }
 
   MipiSystHandle.systh_header = &MipiSystHeader;
@@ -228,13 +214,13 @@ TraceHubSysTWriteCataLog64 (
     Status = CheckWhetherToOutputMsg (
                &MipiSystHandle,
                (UINT8 *)&mThDebugInstArray[Index],
-               (MIPI_SYST_SEVERITY)SeverityType,
+               SeverityType,
                TraceHubCatalogType
                );
     if (!RETURN_ERROR (Status)) {
       Status = MipiSystWriteCatalog (
                  &MipiSystHandle,
-                 (MIPI_SYST_SEVERITY)SeverityType,
+                 SeverityType,
                  Id
                  );
       if (RETURN_ERROR (Status)) {
@@ -244,4 +230,34 @@ TraceHubSysTWriteCataLog64 (
   }
 
   return Status;
+}
+
+/**
+  Get TraceHob configuration data
+
+  @param  ImageHandle   The firmware allocated handle for the EFI image.
+  @param  SystemTable   A pointer to the EFI System Table.
+
+  @retval EFI_SUCCESS           The constructor always returns EFI_SUCCESS.
+  @retval EFI_OUT_OF_RESOURCES
+
+**/
+RETURN_STATUS
+EFIAPI
+TraceHubDebugSysTLibConstructor (
+  IN EFI_HANDLE        ImageHandle,
+  IN EFI_SYSTEM_TABLE  *SystemTable
+  )
+{
+  if (mDbgInstCount == 0) {
+    mDbgInstCount = CountThDebugInstance ();
+  }
+
+  mThDebugInstArray = AllocateZeroPool (mDbgInstCount * sizeof (TRACEHUB_DEBUG_INFO_HOB));
+
+  if (mThDebugInstArray != NULL) {
+    PackThDebugInstance (mThDebugInstArray, mDbgInstCount);
+  }
+
+  return RETURN_SUCCESS;
 }
